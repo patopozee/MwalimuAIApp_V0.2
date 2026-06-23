@@ -69,4 +69,4 @@ if submit_button:
         st.rerun()
 
 st.markdown("---")
-st.caption("📚 Mwalimu AI AppVersion 0.4 | Gateway Hybrid Engine (Gemini + Llama 3.3)")
+st.caption("📚 Mwalimu AI App Version 0.2 | Gateway Hybrid Engine (Gemini + Llama 3.3)")

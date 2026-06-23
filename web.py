@@ -46,7 +46,7 @@ for message in st.session_state.messages:
         st.write("### 👨‍🎓 You")
         st.write(message["content"])
     elif message["role"] == "assistant":
-        st.write("### 👨‍🏫 Mwalimu AI")
+        st.write("### 👨‍🏫 Mwalimu AI App")
         st.write(message["content"])
     st.markdown("---")
 
@@ -69,4 +69,4 @@ if submit_button:
         st.rerun()
 
 st.markdown("---")
-st.caption("📚 Mwalimu AI Version 0.4 | Gateway Hybrid Engine (Gemini + Llama 3.3)")
+st.caption("📚 Mwalimu AI AppVersion 0.4 | Gateway Hybrid Engine (Gemini + Llama 3.3)")

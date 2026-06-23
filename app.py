@@ -78,7 +78,17 @@ def ask_mwalimu(question, student, messages):
         return response.text
 
     except Exception as e:
+        error_msg = str(e).lower()
+        
+        # Catch 503 Overloaded, high demand, or resource exhaustion spikes gracefully
+        if "503" in error_msg or "demand" in error_msg or "resource_exhausted" in error_msg:
+            return (
+                "Pole! 😭 My classroom is currently very crowded with other students. "
+                "Please wait just a few seconds and try asking your question again!"
+            )
+        
+        # General fallback if another unique error occurs
         return (
-            "Sorry, Mwalimu AI encountered an error. "
+            "Sorry, Mwalimu AI encountered an unexpected error. "
             f"Details: {e}"
         )

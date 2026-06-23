@@ -121,20 +121,12 @@ for message in st.session_state.messages:
 
 
 # -----------------------------
-# Question Input Form
+# Mobile-Friendly Chat Input Element
 # -----------------------------
-with st.form(
-    key="mwalimu_form",
-    clear_on_submit=True
-):
+question = st.chat_input("✏️ Ask your question")
 
-    question = st.text_input(
-        "✏️ Ask your question"
-    )
-
-    submit_button = st.form_submit_button(
-        "Ask Mwalimu AI"
-    )
+# Set submit_button to True if the student enters a question
+submit_button = True if question else False
 
 
 # -----------------------------
@@ -148,7 +140,7 @@ if submit_button:
             "⚠️ Please enter your name in the Student Profile."
         )
 
-    elif not question.strip():
+    elif not question or not question.strip():
         st.warning(
             "⚠️ Please type a question."
         )
@@ -162,6 +154,7 @@ if submit_button:
                 "content": question
             }
         )
+        
 
         # Ask Gemini
         with st.spinner(

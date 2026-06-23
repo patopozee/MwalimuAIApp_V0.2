@@ -1,83 +1,124 @@
 # 🎓 Mwalimu AI
 
-> An AI-powered personalized learning assistant built with **Python**, **Streamlit**, and **Google Gemini 2.5 Flash**.
+<div align="center">
 
-Mwalimu AI is designed to provide students with an engaging, adaptive, and personalized learning experience. The platform acts as an intelligent tutor that adjusts explanations based on a student's age, grade level, learning style, strengths, weaknesses, and preferred language.
+### An AI-Powered Personalized Learning Assistant for Kenyan Students
+
+Built with **Python**, **Streamlit**, and **Large Language Models (LLMs)**
+
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![Streamlit](https://img.shields.io/badge/Streamlit-Frontend-red)
+![AI](https://img.shields.io/badge/AI-Powered-green)
+![License](https://img.shields.io/badge/License-MIT-yellow)
+
+</div>
 
 ---
 
-## 🌟 Features
+## 📖 Overview
 
-### 🤖 AI-Powered Teacher
+**Mwalimu AI** is an intelligent tutoring platform designed to provide personalized, adaptive, and engaging educational support for students.
 
-Mwalimu AI leverages **Google Gemini 2.5 Flash** to deliver:
+Unlike traditional chatbots, Mwalimu AI adjusts explanations based on:
 
-* Personalized explanations tailored to student profiles
-* Age and grade-appropriate learning content
-* Practical real-world examples
-* Encouraging and supportive feedback
-* Adaptive teaching strategies
+* 🎓 Grade level
+* 👤 Student age
+* 🧠 Learning style
+* ⭐ Academic strengths
+* 📉 Academic weaknesses
+* 🌍 Preferred language
+
+The goal is to create an AI tutor that feels like a real teacher—capable of explaining concepts differently for every learner.
+
+---
+
+## ✨ Current Features (Version 0.4)
+
+### 🤖 Personalized AI Teacher
+
+Mwalimu AI provides:
+
+* Age-appropriate explanations
+* Grade-specific content adaptation
+* Interactive teaching methods
+* Step-by-step problem solving
+* Encouraging feedback
+* Personalized examples
+
+---
 
 ### 👨‍🎓 Dynamic Student Profiles
 
-Students can customize their learning experience through an interactive sidebar.
+Students can customize their learning experience using a profile system.
 
-Profile attributes include:
+#### Profile Attributes
 
 * Name
 * Age
-* Grade Level
+* Grade
 * Favorite Subject
 * Weak Subject
 * Learning Style
-
-  * Visual
-  * Auditory
-  * Reading/Writing
-  * Kinesthetic
 * Preferred Language
 
-  * English
-  * Kiswahili
-  * Sheng
+All profile information is injected into the AI context at runtime.
 
-All profile information is dynamically injected into the AI system prompt, ensuring every response is personalized.
+---
 
-### 🧠 Quick Challenge Mode
+### 💬 Conversational Memory
 
-To encourage critical thinking, Mwalimu AI presents students with engaging brain teasers and learning challenges based on their interests and academic profile.
+Unlike a traditional Q&A bot, Mwalimu AI remembers previous messages during a session.
 
-### 🌐 Interactive Web Interface
+Example:
 
-Built using **Streamlit**, the application includes:
+Student:
 
-* Modern dark-themed UI
-* Dynamic sidebar controls
-* Session state persistence
-* Real-time AI responses
-* Easy profile customization
+> What is photosynthesis?
+
+Mwalimu AI:
+
+> Photosynthesis is the process by which plants make food.
+
+Student:
+
+> Explain it in Kiswahili.
+
+Mwalimu AI understands what "it" refers to and continues the conversation naturally.
+
+---
+
+### 🌐 Modern Streamlit Interface
+
+Features include:
+
+* Responsive design
+* Sidebar student profile management
+* Chat-style interaction
+* Session memory
+* Loading indicators
+* One-click chat clearing
 
 ---
 
 ## 🏗️ System Architecture
 
 ```text
-Student
-   │
-   ▼
-Streamlit Frontend
-(web.py)
-   │
-   ▼
-ask_mwalimu()
-(app.py)
-   │
-   ▼
-Google Gemini API
-(gemini-2.5-flash)
-   │
-   ▼
-Personalized Learning Response
+                 Student
+                    │
+                    ▼
+         Streamlit Frontend (web.py)
+                    │
+                    ▼
+       Conversation & Profile Manager
+                    │
+                    ▼
+          Mwalimu AI Engine (app.py)
+                    │
+                    ▼
+          Large Language Model (LLM)
+                    │
+                    ▼
+      Personalized Educational Response
 ```
 
 ---
@@ -85,26 +126,38 @@ Personalized Learning Response
 ## 📂 Project Structure
 
 ```text
-MwalimuAIApp_V0.2/
+MwalimuAI/
 │
-├── app.py               # Gemini integration and AI engine
-├── web.py               # Streamlit frontend
-├── .env                 # Environment variables
-├── requirements.txt     # Dependencies
-└── README.md            # Project documentation
+├── app.py
+│   └── AI engine and prompt management
+│
+├── web.py
+│   └── Streamlit frontend interface
+│
+├── .env
+│   └── Environment variables
+│
+├── requirements.txt
+│   └── Python dependencies
+│
+├── README.md
+│   └── Project documentation
+│
+└── assets/
+    └── Screenshots and media
 ```
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Technology              | Purpose                   |
-| ----------------------- | ------------------------- |
-| Python 3.10+            | Core Programming Language |
-| Streamlit               | Web Application Framework |
-| Google Gemini 2.5 Flash | AI Model                  |
-| google-genai            | Gemini SDK                |
-| python-dotenv           | Environment Management    |
+| Technology       | Purpose                         |
+| ---------------- | ------------------------------- |
+| Python 3.10+     | Core application development    |
+| Streamlit        | Web application framework       |
+| Gemini / LLM API | AI-powered tutoring             |
+| python-dotenv    | Environment variable management |
+| Session State    | Conversational memory           |
 
 ---
 
@@ -113,8 +166,9 @@ MwalimuAIApp_V0.2/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/<YOUR_USERNAME>/MwalimuAIApp_V0.2.git
-cd MwalimuAIApp_V0.2
+git clone https://github.com/yourusername/MwalimuAI.git
+
+cd MwalimuAI
 ```
 
 ### 2. Create a Virtual Environment
@@ -123,15 +177,19 @@ cd MwalimuAIApp_V0.2
 
 ```bash
 python -m venv venv
+
 venv\Scripts\activate
 ```
 
-#### Linux/macOS
+#### Linux / macOS
 
 ```bash
 python3 -m venv venv
+
 source venv/bin/activate
 ```
+
+---
 
 ### 3. Install Dependencies
 
@@ -139,35 +197,33 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Required packages:
+Example requirements:
 
-```txt
+```text
 streamlit
 google-genai
 python-dotenv
 ```
 
+---
+
 ### 4. Configure Environment Variables
 
-Create a `.env` file in the project root:
+Create a `.env` file:
 
 ```env
 GEMINI_API_KEY=your_api_key_here
 ```
 
-> ⚠️ Never commit your `.env` file or API keys to GitHub.
-
 ---
 
-## ▶️ Running the Application
-
-Start the Streamlit application:
+### 5. Launch the Application
 
 ```bash
 streamlit run web.py
 ```
 
-The application will launch locally at:
+Application URL:
 
 ```text
 http://localhost:8501
@@ -175,42 +231,115 @@ http://localhost:8501
 
 ---
 
-## 📸 Screenshots
+## 🧠 How Mwalimu AI Works
 
-Add screenshots of your application here:
+### Step 1 — Student Creates Profile
+
+The learner provides:
+
+* Name
+* Grade
+* Age
+* Learning style
+* Language preference
+
+---
+
+### Step 2 — Student Asks a Question
+
+Example:
+
+> What is a fraction?
+
+---
+
+### Step 3 — AI Builds Context
+
+The engine combines:
+
+* Student profile
+* Previous conversation history
+* Teaching instructions
+
+---
+
+### Step 4 — AI Generates Response
+
+The LLM produces a personalized explanation tailored to the learner.
+
+---
+
+## 📸 Screenshots
 
 ```text
 assets/
 ├── homepage.png
-├── sidebar-profile.png
-└── ai-response.png
+├── profile-sidebar.png
+├── chat-interface.png
+└── personalized-response.png
 ```
-
-Example:
-
-![Mwalimu AI Home](assets/homepage.png)
 
 ---
 
-## 🚀 Future Roadmap
+## 🚀 Roadmap
 
-* [ ] Student authentication system
-* [ ] Learning progress tracking
+### Version 0.5
+
+* [ ] Student accounts
+* [ ] SQLite database integration
+* [ ] Learning history storage
+* [ ] Progress tracking
+
+### Version 0.6
+
 * [ ] AI-generated quizzes
-* [ ] Performance analytics dashboard
-* [ ] Multi-session memory
+* [ ] Homework assistant
+* [ ] Lesson summary generator
+* [ ] Flashcard creator
+
+### Version 0.7
+
+* [ ] CBC curriculum integration
+* [ ] KCSE revision materials
+* [ ] Retrieval-Augmented Generation (RAG)
+* [ ] Vector database knowledge base
+
+### Version 1.0
+
 * [ ] Teacher dashboard
-* [ ] Parent monitoring portal
-* [ ] Voice-based tutoring
-* [ ] Mobile application
+* [ ] Parent dashboard
+* [ ] Voice tutoring
+* [ ] Multi-agent AI learning ecosystem
 
 ---
 
 ## 🎯 Vision
 
-Mwalimu AI aims to become a comprehensive intelligent learning ecosystem that delivers personalized education to every student, regardless of their learning style, language preference, or academic background.
+Our long-term goal is to build a complete AI-powered educational platform capable of delivering personalized learning experiences to students across Kenya and beyond.
 
-By combining modern AI capabilities with adaptive teaching strategies, Mwalimu AI seeks to make learning more accessible, engaging, and effective for students everywhere.
+Mwalimu AI aims to become:
+
+* A personal tutor
+* A study planner
+* A homework assistant
+* A revision coach
+* A progress tracking system
+
+All in one platform.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome.
+
+To contribute:
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push your branch
+5. Open a Pull Request
 
 ---
 
@@ -219,8 +348,8 @@ By combining modern AI capabilities with adaptive teaching strategies, Mwalimu A
 **Mugo Young Millionaire**
 
 * Python Developer
-* AI & Machine Learning Enthusiast
-* Building educational technology solutions powered by Large Language Models
+* AI Enthusiast
+* Educational Technology Builder
 
 ---
 
@@ -228,15 +357,4 @@ By combining modern AI capabilities with adaptive teaching strategies, Mwalimu A
 
 This project is licensed under the MIT License.
 
-Feel free to fork, contribute, and improve the project.
-
-## 🧠 How It Works Under the Hood
-  Profile Synthesis: The student updates their specific parameters (Age, Grade, Preferred Language) in the Streamlit sidebar.
-
-  Context Delivery: The student inputs a question and submits the form.
-
-  System Prompt Construction: app.py bundles the user profile metadata alongside core behavioral constraints, instructing the model to reply using specific tones (e.g., using Sheng or phrasing math concepts using 3rd-grade metaphors).
-
-  LLM Execution: The compiled prompt hits gemini-2.5-flash.
-
-  UI Rendering: The response is seamlessly returned and parsed on screen.
+Feel free to use, modify, and distribute the software in accordance with the license terms.

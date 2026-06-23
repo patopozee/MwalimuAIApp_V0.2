@@ -186,5 +186,5 @@ if submit_button:
 st.markdown("---")
 
 st.caption(
-    "📚 Mwalimu AI Version 0.3 | Personalized AI Tutor powered by Gemini 2.5 Flash"
+    "📚 Mwalimu AI App Version 0.2 | Personalized AI Tutor powered by Gemini 2.5 Flash"
 )

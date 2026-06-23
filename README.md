@@ -1,4 +1,4 @@
-# 🎓 Mwalimu AI
+# 🎓 Mwalimu AI App
 
 <div align="center">
 

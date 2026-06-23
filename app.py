@@ -73,7 +73,8 @@ def ask_mwalimu(question, student, messages):
                 "HTTP-Referer": "https://mwalimu-ai.streamlit.app", 
                 "X-Title": "Mwalimu AI App",
             },
-            model="openrouter/free",
+            # TO THIS SPECIFIC RELIABLE MODEL:
+            model="meta-llama/llama-3-8b-instruct:free",
             messages=[{"role": "user", "content": prompt}]
         )
         return response.choices[0].message.content

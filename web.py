@@ -1,5 +1,5 @@
 import streamlit as st
-from app import ask_mwalimu
+from app import ask_mwalimu, generate_quiz
 
 # Page Setup
 st.set_page_config(page_title="Mwalimu AI App", page_icon="📚", layout="centered")
@@ -8,6 +8,7 @@ st.title("📚 Mwalimu AI App")
 st.write(
     "Welcome! I am your friendly Kenyan AI teacher. "
     "Create your profile and ask me any school question."
+    "You can also generate quizzes tailored to your learning style and grade level."
 )
 
 # Sidebar UI
@@ -15,13 +16,53 @@ st.sidebar.title("👨‍🎓 Student Profile")
 name = st.sidebar.text_input("Student Name")
 grade = st.sidebar.selectbox(
     "Grade",
-    ["Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Form 1", "Form 2", "Form 3", "Form 4"]
+
+    [
+        "Grade 1", 
+        "Grade 2", 
+        "Grade 3", 
+        "Grade 4", 
+        "Grade 5", 
+        "Grade 6", 
+        "Grade 7", 
+        "Grade 8", 
+        "Form 1", 
+        "Form 2", 
+        "Form 3", 
+        "Form 4"
+    ]
 )
-age = st.sidebar.number_input("Age", min_value=5, max_value=25, value=10)
+age = st.sidebar.number_input(
+    "Age", 
+    min_value=5, 
+    max_value=25, 
+    value=10
+)
+
 favorite_subject = st.sidebar.text_input("Favorite Subject")
 weak_subject = st.sidebar.text_input("Weak Subject")
-learning_style = st.sidebar.selectbox("Learning Style", ["Visual", "Practical", "Reading/Writing", "Interactive", "Story-based"])
-language = st.sidebar.selectbox("Preferred Language", ["English", "Kiswahili", "Sheng"])
+
+learning_style = st.sidebar.selectbox(
+    "Learning Style", 
+
+    [
+        "Visual", 
+        "Practical", 
+        "Reading/Writing", 
+        "Interactive", 
+        "Story-based"
+    ]
+)
+
+language = st.sidebar.selectbox(
+    "Preferred Language",
+
+    [
+        "English", 
+        "Kiswahili", 
+        "Sheng"
+    ]
+)
 
 student = {
     "name": name,
@@ -33,14 +74,52 @@ student = {
     "language": language,
 }
 
+# --- INITIALIZE SESSION STATE KEYS ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+if "quiz" not in st.session_state:
+    st.session_state.quiz = None  # Crucial fix to stop the AttributeError
+
+
 if st.sidebar.button("🗑️ Clear Chat"):
     st.session_state.messages = []
+    st.session_state.quiz = None  # Also reset quiz when clearing
     st.rerun()
 
-# Display Conversation
+# -----------------------------------
+# QUIZ GENERATOR
+# -----------------------------------
+st.markdown("---")
+st.subheader("📝 Quiz Generator")
+
+quiz_topic = st.text_input(
+    "Quiz Topic",
+    placeholder="e.g. Fractions, Photosynthesis, Electricity"
+)
+
+if st.button("Generate Quiz"):
+    if not quiz_topic.strip():
+        st.warning("Please enter a quiz topic.")
+    else:
+        with st.spinner("Generating quiz..."):
+            st.session_state.quiz = generate_quiz(
+                quiz_topic,
+                student
+            )
+            st.rerun()  # Forces a clean redraw to reveal the quiz block
+
+# -----------------------------------
+# DISPLAY QUIZ
+# -----------------------------------
+# Safe check now that key is guaranteed to exist
+if st.session_state.quiz:
+    st.markdown("### 📋 Generated Quiz")
+    st.write(st.session_state.quiz)
+    st.markdown("---")
+
+
+# Display Conversation History
 for message in st.session_state.messages:
     if message["role"] == "student":
         st.write("### 👨‍🎓 You")
@@ -60,13 +139,21 @@ if submit_button:
     elif not question or not question.strip():
         st.warning("⚠️ Please type a question.")
     else:
-        st.session_state.messages.append({"role": "student", "content": question})
+        st.session_state.messages.append(
+            {"role": "student", "content": question}
+        )
 
         with st.spinner("🧠 Mwalimu AI is thinking..."):
-            answer = ask_mwalimu(question, student, st.session_state.messages)
+            answer = ask_mwalimu(
+                question, 
+                student, 
+                st.session_state.messages
+            )
 
-        st.session_state.messages.append({"role": "assistant", "content": answer})
+        st.session_state.messages.append(
+            {"role": "assistant", "content": answer}
+        )
         st.rerun()
 
 st.markdown("---")
-st.caption("📚 Mwalimu AI App Version 0.2 | Gateway Hybrid Engine (Gemini + Llama 3.3)")
+st.caption("📚 Mwalimu AI App Version 0.3 | Gateway Hybrid Engine")

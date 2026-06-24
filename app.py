@@ -14,10 +14,8 @@ client = OpenAI(
 
 def ask_mwalimu(question, student, messages):
     """
-    Dispatches prompts straight to OpenRouter's high-availability
-    free routing pool to bypass all individual model rate limits.
-    Takes the current question, student profile,
-    and previous conversation history.
+    Dispatches prompts straight to OpenRouter's auto-balancing free routing pool.
+    This automatically switches models to keep your classroom online 24/7.
     """
 
     # Build conversation history context string
@@ -67,14 +65,13 @@ def ask_mwalimu(question, student, messages):
     """
 
     try:
-        # Call the auto-load-balanced free model router
         response = client.chat.completions.create(
             extra_headers={
                 "HTTP-Referer": "https://mwalimu-ai.streamlit.app", 
                 "X-Title": "Mwalimu AI App",
             },
-            # TO THIS SPECIFIC RELIABLE MODEL:
-            model="meta-llama/llama-3-8b-instruct:free",
+            # Uses OpenRouter's automatic free pool to instantly bypass model removals
+            model="openrouter/free",
             messages=[{"role": "user", "content": prompt}]
         )
         return response.choices[0].message.content
@@ -87,3 +84,44 @@ def ask_mwalimu(question, student, messages):
                 "Please wait 5 seconds and click ask again!"
             )
         return f"Mwalimu AI hit a routing issue. Details: {e}"
+
+
+def generate_quiz(topic, student):
+    """
+    Generate a quiz using the automatic free routing engine pool.
+    """
+
+    prompt = f"""
+    You are Mwalimu AI, a Kenyan teacher.
+
+    Student Profile:
+    Name: {student["name"]}
+    Grade: {student["grade"]}
+    Age: {student["age"]}
+    Learning Style: {student["learning_style"]}
+    Language: {student["language"]}
+
+    Create a 5-question multiple-choice quiz about:
+    {topic}
+
+    Rules:
+    - Match the student's grade level.
+    - Include options A, B, C, and D.
+    - Mark the correct answer after each question.
+    - Keep questions age-appropriate.
+    """
+
+    try:
+        response = client.chat.completions.create(
+            extra_headers={
+                "HTTP-Referer": "https://mwalimu-ai.streamlit.app",
+                "X-Title": "Mwalimu AI App Quiz",
+            },
+            # Uses OpenRouter's automatic free pool for quiz construction
+            model="openrouter/free",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message.content
+
+    except Exception as error:
+        return "Quiz generation failed due to high server traffic. Please try again in a few moments."

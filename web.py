@@ -47,24 +47,47 @@ resized_logo = sidebar_logo.resize((150, 150)) # 📊 Increased resize bounds fo
 st.logo(resized_logo)
 
 # Update this exact CSS block to break past default structural limits
+# Update this exact CSS block to flatten all possible main page container paddings:
 st.html("""
     <style>
-        /* 1. Force the image container to render larger */
+        /* ========================================================
+           NUCLEAR MAIN PAGE SPACER REMOVAL (COLLAPSE TOP ZONE)
+           ======================================================== */
+        
+        /* 1. Kill the invisible top status/deploy bar element completely */
+        [data-testid="stHeader"], header {
+            display: none !important;
+            height: 0px !important;
+        }
+
+        /* 2. Strip padding off the main viewport container layouts */
+        [data-testid="stAppViewMainObj"], .stMain, [data-testid="stMain"] {
+            padding-top: 0rem !important;
+            margin-top: 0rem !important;
+        }
+
+        /* 3. Strip padding off the inner content wrapper layout */
+        [data-testid="stMainBlockContainer"], 
+        [data-testid="stAppViewBlockContainer"], 
+        .block-container {
+            padding-top: 0rem !important;
+            margin-top: 0rem !important;
+        }
+        
+        /* ========================================================
+           SIDEBAR LOGO TUNING (PRESERVED FOR YOUR SIDEBAR)
+           ======================================================== */
         [data-testid="stSidebarHeader"] img {
             max-height: 100px !important;  
             width: auto !important;
-            min-height: 90px !important;   /* Prevents downscaling overrides */
+            min-height: 90px !important;   
         }
-        
-        /* 2. Target the navigation icon block wrapper to let the container expand */
         [data-testid="stSidebarHeader"] [data-testid="stSidebarLogo"] {
             max-height: 100px !important;
             width: auto !important;
             display: flex !important;
             align-items: center !important;
         }
-        
-        /* 3. Add ample structural padding so it sits clearly above "Student Profile" */
         [data-testid="stSidebarHeader"] {
             padding-top: 2.0rem !important;
             padding-bottom: 1.5rem !important;
@@ -74,30 +97,33 @@ st.html("""
 """)
 
 # --------------------------------------------------
-# TITLE & INTRO (Emoji Replaced with Brand Logo)
+# TITLE & INTRO (Pulled completely to the top)
 # --------------------------------------------------
-# Create two unequal columns: small one for the logo, larger one for the title
 col1, col2 = st.columns([1, 5], vertical_alignment="center")
 
 with col1:
-    # This displays your logo right where the books emoji used to be
     title_logo = Image.open("assets/logo112.png")
+    # Using a clean div wrapper around the image to force zero margins
+    st.html("<div style='margin-top: 0 !important; margin-bottom: 0 !important;'>")
     st.image(title_logo, width=100)
+    st.html("</div>")
 
 with col2:
-    # Displays the clean title text right next to the logo
+    # Adding 'margin-top: 0 !important;' pulls the text completely up
     st.markdown(
         """
-        <h1 style='margin: 0; padding: 0;'>Mwalimu AI App</h1>
-        <h4 style='margin: 0; padding-top: 5px; color: gray; font-weight: normal;'>
+        <h1 style='margin-top: 0 !important; margin-bottom: 0 !important; padding: 0;'>
+            Mwalimu AI App
+        </h1>
+        <h4 style='margin-top: 2px !important; margin-bottom: 0 !important; color: gray; font-weight: normal;'>
             Shaping Minds, Shifting Futures.
         </h4>
         """,
         unsafe_allow_html=True
     )
 
-# Spacing adjustment before your welcome message
-st.markdown("<br>", unsafe_allow_html=True)
+# A small controlled space before the welcome paragraph
+st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
 
 st.write(
     """

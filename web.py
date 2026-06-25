@@ -1,35 +1,122 @@
+from PIL import Image
 import streamlit as st
+import sqlite3
 from app import ask_mwalimu, generate_quiz
 
-# Page Setup
-st.set_page_config(page_title="Mwalimu AI App", page_icon="📚", layout="centered")
+# --- INITIALIZE SESSION STATE KEYS ---
+if "quiz_questions" not in st.session_state:
+    st.session_state.quiz_questions = []
 
-st.title("📚 Mwalimu AI App")
-st.write(
-    "Welcome! I am your friendly Kenyan AI teacher. "
-    "Create your profile and ask me any school question."
-    "You can also generate quizzes tailored to your learning style and grade level."
+if "quiz_raw_score" not in st.session_state:
+    st.session_state.quiz_raw_score = 0
+
+if "quiz_score" not in st.session_state:
+    st.session_state.quiz_score = 0
+
+if "quiz_submitted" not in st.session_state:
+    st.session_state.quiz_submitted = False
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+if "quiz" not in st.session_state:
+    st.session_state.quiz = None  
+
+
+from database import (
+    create_tables,
+    save_activity,
+    get_student_stats
 )
 
-# Sidebar UI
-st.sidebar.title("👨‍🎓 Student Profile")
+# Build structure safely at startup
+create_tables()
+
+# Page Setup
+st.set_page_config(
+    page_title="Mwalimu AI App",
+    page_icon="assets/logo112.png",
+    layout="centered"
+)
+
+# --------------------------------------------------
+# LOGO & UI SETTINGS
+# --------------------------------------------------
+sidebar_logo = Image.open("assets/logo211.png")
+resized_logo = sidebar_logo.resize((150, 150)) # 📊 Increased resize bounds for crisper resolution
+st.logo(resized_logo)
+
+# Update this exact CSS block to break past default structural limits
+st.html("""
+    <style>
+        /* 1. Force the image container to render larger */
+        [data-testid="stSidebarHeader"] img {
+            max-height: 100px !important;  
+            width: auto !important;
+            min-height: 90px !important;   /* Prevents downscaling overrides */
+        }
+        
+        /* 2. Target the navigation icon block wrapper to let the container expand */
+        [data-testid="stSidebarHeader"] [data-testid="stSidebarLogo"] {
+            max-height: 100px !important;
+            width: auto !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        
+        /* 3. Add ample structural padding so it sits clearly above "Student Profile" */
+        [data-testid="stSidebarHeader"] {
+            padding-top: 2.0rem !important;
+            padding-bottom: 1.5rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+    </style>
+""")
+
+# --------------------------------------------------
+# TITLE & INTRO (Emoji Replaced with Brand Logo)
+# --------------------------------------------------
+# Create two unequal columns: small one for the logo, larger one for the title
+col1, col2 = st.columns([1, 5], vertical_alignment="center")
+
+with col1:
+    # This displays your logo right where the books emoji used to be
+    title_logo = Image.open("assets/logo112.png")
+    st.image(title_logo, width=100)
+
+with col2:
+    # Displays the clean title text right next to the logo
+    st.markdown(
+        """
+        <h1 style='margin: 0; padding: 0;'>Mwalimu AI App</h1>
+        <h4 style='margin: 0; padding-top: 5px; color: gray; font-weight: normal;'>
+            Shaping Minds, Shifting Futures.
+        </h4>
+        """,
+        unsafe_allow_html=True
+    )
+
+# Spacing adjustment before your welcome message
+st.markdown("<br>", unsafe_allow_html=True)
+
+st.write(
+    """
+    Welcome! I am your friendly Kenyan AI teacher.
+    Create your profile and ask me any school question.
+    You can also generate quizzes tailored to your grade level,
+    learning style, and preferred language.
+    """
+)
+
+# Sidebar UI Elements
+st.sidebar.title("Student Profile")
+
 name = st.sidebar.text_input("Student Name")
 grade = st.sidebar.selectbox(
     "Grade",
-
     [
-        "Grade 1", 
-        "Grade 2", 
-        "Grade 3", 
-        "Grade 4", 
-        "Grade 5", 
-        "Grade 6", 
-        "Grade 7", 
-        "Grade 8", 
-        "Form 1", 
-        "Form 2", 
-        "Form 3", 
-        "Form 4"
+        "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6", 
+        "Grade 7", "Grade 8", "Form 1", "Form 2", "Form 3", "Form 4"
     ]
 )
 age = st.sidebar.number_input(
@@ -44,24 +131,12 @@ weak_subject = st.sidebar.text_input("Weak Subject")
 
 learning_style = st.sidebar.selectbox(
     "Learning Style", 
-
-    [
-        "Visual", 
-        "Practical", 
-        "Reading/Writing", 
-        "Interactive", 
-        "Story-based"
-    ]
+    ["Visual", "Practical", "Reading/Writing", "Interactive", "Story-based"]
 )
 
 language = st.sidebar.selectbox(
     "Preferred Language",
-
-    [
-        "English", 
-        "Kiswahili", 
-        "Sheng"
-    ]
+    ["English", "Kiswahili", "Sheng"]
 )
 
 student = {
@@ -74,18 +149,23 @@ student = {
     "language": language,
 }
 
-# --- INITIALIZE SESSION STATE KEYS ---
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-if "quiz" not in st.session_state:
-    st.session_state.quiz = None  # Crucial fix to stop the AttributeError
-
-
 if st.sidebar.button("🗑️ Clear Chat"):
     st.session_state.messages = []
-    st.session_state.quiz = None  # Also reset quiz when clearing
+    st.session_state.quiz = None  
+    st.session_state.quiz_submitted = False
+    st.session_state.quiz_score = 0
+    st.session_state.quiz_raw_score = 0
     st.rerun()
+
+# --- PROGRESS DASHBOARD ---
+st.sidebar.markdown("---")
+st.sidebar.subheader("📊 Progress Dashboard")
+
+if name:
+    stats = get_student_stats(name, grade, age)
+    st.sidebar.metric("Questions Asked", stats["questions"])
+    st.sidebar.metric("Quizzes Generated", stats["quizzes"])
+    st.sidebar.metric("Average Score", f"{stats['average_score']}%")
 
 # -----------------------------------
 # QUIZ GENERATOR
@@ -103,23 +183,82 @@ if st.button("Generate Quiz"):
         st.warning("Please enter a quiz topic.")
     else:
         with st.spinner("Generating quiz..."):
-            st.session_state.quiz = generate_quiz(
-                quiz_topic,
-                student
-            )
-            st.rerun()  # Forces a clean redraw to reveal the quiz block
+            st.session_state.quiz = generate_quiz(quiz_topic, student)
+            st.session_state.quiz_submitted = False
+            st.session_state.quiz_score = 0
+            st.session_state.quiz_raw_score = 0
+            save_activity(name, grade, age, "quiz", quiz_topic, 0)
+            st.rerun() 
 
 # -----------------------------------
-# DISPLAY QUIZ
+# DISPLAY INTERACTIVE QUIZ
 # -----------------------------------
-# Safe check now that key is guaranteed to exist
 if st.session_state.quiz:
     st.markdown("### 📋 Generated Quiz")
-    st.write(st.session_state.quiz)
-    st.markdown("---")
 
+    for i, question in enumerate(st.session_state.quiz):
+        st.markdown(f"#### Question {i + 1}")
+        st.radio(
+            question["question"],
+            question["options"],
+            index=None,
+            key=f"q{i}",
+            disabled=st.session_state.quiz_submitted
+        )
 
-# Display Conversation History
+    if not st.session_state.quiz_submitted:
+        if st.button("✅ Submit Quiz"):
+            current_answers = [st.session_state.get(f"q{i}") for i in range(len(st.session_state.quiz))]
+            
+            if None in current_answers:
+                st.warning("⚠️ Please answer all questions before submitting.")
+            else:
+                score = 0
+                for i, q in enumerate(st.session_state.quiz):
+                    if current_answers[i] == q["answer"]:
+                        score += 1
+
+                st.session_state.quiz_raw_score = score
+                st.session_state.quiz_score = round((score / len(st.session_state.quiz)) * 100)
+                st.session_state.quiz_submitted = True
+                
+                save_activity(name, grade, age, "quiz_score", quiz_topic, st.session_state.quiz_score)
+                st.rerun()
+
+    if st.session_state.quiz_submitted:
+        raw_score = st.session_state.quiz_raw_score
+        total_questions = len(st.session_state.quiz)
+        percentage = st.session_state.quiz_score
+
+        st.success(f"🎉 You scored {raw_score}/{total_questions} ({percentage}%)")
+        st.markdown("## 📖 Answer Review")
+
+        for i, q in enumerate(st.session_state.quiz):
+            student_answer = st.session_state.get(f"q{i}")
+            correct_answer = q["answer"]
+
+            st.markdown(f"### Question {i+1}")
+            st.write(q["question"])
+            st.write(f"**Your Answer:** {student_answer}")
+
+            if student_answer == correct_answer:
+                st.success(f"✅ Correct Answer: {correct_answer}")
+            else:
+                st.error(f"❌ Correct Answer: {correct_answer}")
+                
+        if st.button("🔄 Clear Quiz Results"):
+            st.session_state.quiz = None
+            st.session_state.quiz_submitted = False
+            st.session_state.quiz_score = 0
+            st.session_state.quiz_raw_score = 0
+            st.rerun()
+
+# -----------------------------------
+# DISPLAY CONVERSATION HISTORY
+# -----------------------------------
+st.markdown("---")
+st.subheader("💬 Chat with Mwalimu")
+
 for message in st.session_state.messages:
     if message["role"] == "student":
         st.write("### 👨‍🎓 You")
@@ -129,31 +268,25 @@ for message in st.session_state.messages:
         st.write(message["content"])
     st.markdown("---")
 
-# Mobile-Safe Input
+# -----------------------------------
+# MOBILE-SAFE INPUT
+# -----------------------------------
 question = st.chat_input("✏️ Ask your question")
-submit_button = True if question is not None else False
 
-if submit_button:
+if question:
     if not name.strip():
         st.warning("⚠️ Please enter your name in the Student Profile sidebar.")
-    elif not question or not question.strip():
+    elif not question.strip():
         st.warning("⚠️ Please type a question.")
     else:
-        st.session_state.messages.append(
-            {"role": "student", "content": question}
-        )
+        st.session_state.messages.append({"role": "student", "content": question})
 
         with st.spinner("🧠 Mwalimu AI is thinking..."):
-            answer = ask_mwalimu(
-                question, 
-                student, 
-                st.session_state.messages
-            )
+            answer = ask_mwalimu(question, student, st.session_state.messages)
+            save_activity(name, grade, age, "question", question, 0)
 
-        st.session_state.messages.append(
-            {"role": "assistant", "content": answer}
-        )
+        st.session_state.messages.append({"role": "assistant", "content": answer})
         st.rerun()
 
 st.markdown("---")
-st.caption("📚 Mwalimu AI App Version 0.3 | Gateway Hybrid Engine")
+st.caption("📚 Mwalimu AI App Version 0.4 | Gateway Hybrid Engine")

@@ -46,36 +46,35 @@ sidebar_logo = Image.open("assets/logo211.png")
 resized_logo = sidebar_logo.resize((150, 150)) # 📊 Increased resize bounds for crisper resolution
 st.logo(resized_logo)
 
-# Update this exact CSS block to break past default structural limits
-# Update this exact CSS block to flatten all possible main page container paddings:
+# Update this block to give the button room while keeping the main content pulled up:
 st.html("""
     <style>
         /* ========================================================
-           NUCLEAR MAIN PAGE SPACER REMOVAL (COLLAPSE TOP ZONE)
-           ======================================================== */
+           MAIN PAGE TOP SPACE ELIMINATION (SAFE BUTTON LAYOUT)
+           ======================================================= */
         
-        /* 1. Kill the invisible top status/deploy bar element completely */
+        /* 1. Keep the header container its normal size but completely transparent */
         [data-testid="stHeader"], header {
-            display: none !important;
-            height: 0px !important;
+            background-color: transparent !important;
+            height: 3.5rem !important; /* Restores the standard height so buttons don't clip */
         }
 
-        /* 2. Strip padding off the main viewport container layouts */
+        /* 2. Force pull the entire main body content UP underneath the header layer */
         [data-testid="stAppViewMainObj"], .stMain, [data-testid="stMain"] {
+            margin-top: -2.5rem !important; /* Pulls up by the exact height of the header */
             padding-top: 0rem !important;
-            margin-top: 0rem !important;
         }
 
-        /* 3. Strip padding off the inner content wrapper layout */
+        /* 3. Drop internal wrapper margins so everything sits tight at the top */
         [data-testid="stMainBlockContainer"], 
         [data-testid="stAppViewBlockContainer"], 
         .block-container {
-            padding-top: 0rem !important;
+            padding-top: 1.5rem !important; /* Gives the main logo a clean border layout alignment */
             margin-top: 0rem !important;
         }
         
         /* ========================================================
-           SIDEBAR LOGO TUNING (PRESERVED FOR YOUR SIDEBAR)
+           SIDEBAR LOGO TUNING (PRESERVED)
            ======================================================== */
         [data-testid="stSidebarHeader"] img {
             max-height: 100px !important;  

@@ -47,35 +47,56 @@ resized_logo = sidebar_logo.resize((150, 150)) # 📊 Increased resize bounds fo
 st.logo(resized_logo)
 
 # Update this block to give the button room while keeping the main content pulled up:
+# Update this exact CSS block to separate elements automatically on mobile:
 st.html("""
     <style>
         /* ========================================================
-           MAIN PAGE TOP SPACE ELIMINATION (SAFE BUTTON LAYOUT)
-           ======================================================= */
-        
-        /* 1. Keep the header container its normal size but completely transparent */
-        [data-testid="stHeader"], header {
-            background-color: transparent !important;
-            height: 3.5rem !important; /* Restores the standard height so buttons don't clip */
-        }
-
-        /* 2. Force pull the entire main body content UP underneath the header layer */
-        [data-testid="stAppViewMainObj"], .stMain, [data-testid="stMain"] {
-            margin-top: -2.5rem !important; /* Pulls up by the exact height of the header */
-            padding-top: 0rem !important;
-        }
-
-        /* 3. Drop internal wrapper margins so everything sits tight at the top */
-        [data-testid="stMainBlockContainer"], 
-        [data-testid="stAppViewBlockContainer"], 
-        .block-container {
-            padding-top: 1.5rem !important; /* Gives the main logo a clean border layout alignment */
-            margin-top: 0rem !important;
-        }
-        
-        /* ========================================================
-           SIDEBAR LOGO TUNING (PRESERVED)
+           DESKTOP ONLY: COLLAPSE SPACE (Wider than 768px)
            ======================================================== */
+        @media (min-width: 768px) {
+            [data-testid="stHeader"], header {
+                background-color: transparent !important;
+                height: 3.5rem !important;
+            }
+            [data-testid="stAppViewMainObj"], .stMain, [data-testid="stMain"] {
+                margin-top: -2.5rem !important; /* Pulls up ONLY on computer screens */
+                padding-top: 0rem !important;
+            }
+            [data-testid="stMainBlockContainer"], 
+            [data-testid="stAppViewBlockContainer"], 
+            .block-container {
+                padding-top: 1.5rem !important;
+                margin-top: 0rem !important;
+            }
+        }
+
+        /* ========================================================
+           MOBILE ONLY PRESETS (Narrower than 767px)
+           ======================================================== */
+        @media (max-width: 767px) {
+            [data-testid="stHeader"], header {
+                background-color: transparent !important;
+                height: 3.5rem !important; /* Leaves room for the floating toggle */
+            }
+            [data-testid="stAppViewMainObj"], .stMain, [data-testid="stMain"] {
+                margin-top: 0rem !important; /* Removes the negative pull so it doesn't overlap */
+                padding-top: 0.5rem !important;
+            }
+            [data-testid="stMainBlockContainer"], 
+            [data-testid="stAppViewBlockContainer"], 
+            .block-container {
+                padding-top: 1rem !important; /* Clean buffer layout on mobile viewports */
+            }
+        }
+
+        /* ========================================================
+           UNIVERSAL SIDEBAR CONTROL (SAFE FOR BOTH DEVICES)
+           ======================================================== */
+        [data-testid="stHeader"] button {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            border-radius: 4px !important;
+            z-index: 999999 !important;
+        }
         [data-testid="stSidebarHeader"] img {
             max-height: 100px !important;  
             width: auto !important;

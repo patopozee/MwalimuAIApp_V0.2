@@ -27,7 +27,8 @@ if "quiz" not in st.session_state:
 from database import (
     create_tables,
     save_activity,
-    get_student_stats
+    get_student_stats,
+    get_student_quiz_history
 )
 
 # Build structure safely at startup
@@ -221,6 +222,15 @@ if name:
     st.sidebar.metric("Questions Asked", stats["questions"])
     st.sidebar.metric("Quizzes Generated", stats["quizzes"])
     st.sidebar.metric("Average Score", f"{stats['average_score']}%")
+    history_scores = get_student_quiz_history(name, grade, age)
+    
+    if len(history_scores) > 0:
+        st.sidebar.markdown("**📈 Performance Trend**")
+        
+        # Streamlit line charts accept lists/arrays directly!
+        st.sidebar.line_chart(history_scores)
+    else:
+        st.sidebar.caption("Complete a few quizzes to see your progress graph!")
 
 # -----------------------------------
 # QUIZ GENERATOR

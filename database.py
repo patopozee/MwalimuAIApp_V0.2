@@ -129,3 +129,22 @@ def get_student_stats(student_name, grade, age):
         "quizzes": quizzes,
         "average_score": round(average_score or 0, 1)
     }
+
+def get_student_quiz_history(name, grade, age):
+    """Fetches chronological quiz scores for a student to plot on a graph."""
+    conn = sqlite3.connect(DATABASE_NAME) # Using your global DATABASE_NAME variable
+    cursor = conn.cursor()
+    
+    # Updated to match your exact schema table 'progress' and its correct columns
+    cursor.execute("""
+        SELECT score 
+        FROM progress 
+        WHERE student_name = ? AND student_grade = ? AND student_age = ? AND activity_type = 'quiz_score'
+        ORDER BY created_at ASC
+    """, (name, grade, age))
+    
+    rows = cursor.fetchall()
+    conn.close()
+    
+    # Return a flat list of scores, e.g., [70, 80, 100]
+    return [row[0] for row in rows]

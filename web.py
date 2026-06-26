@@ -1,6 +1,7 @@
 from PIL import Image
 import streamlit as st
 import sqlite3
+import base64  # Added for absolute bulletproof image injection
 from app import ask_mwalimu, generate_quiz
 
 # --- INITIALIZE SESSION STATE KEYS ---
@@ -39,80 +40,88 @@ st.set_page_config(
     layout="centered"
 )
 
-# --------------------------------------------------
-# LOGO & UI SETTINGS
-# --------------------------------------------------
-sidebar_logo = Image.open("assets/logo211.png")
-resized_logo = sidebar_logo.resize((150, 150)) # 📊 Increased resize bounds for crisper resolution
-st.logo(resized_logo)
+# --- BASE64 SIDEBAR IMAGE INJECTOR ---
+try:
+    with open("assets/logo211.png", "rb") as image_file:
+        encoded_logo = base64.b64encode(image_file.read()).decode()
+    sidebar_bg_style = f"background-image: url('data:image/png;base64,{encoded_logo}') !important;"
+except Exception:
+    sidebar_bg_style = "" # Fallback if path changes
 
-# Update this block to give the button room while keeping the main content pulled up:
-# Update this exact CSS block to separate elements automatically on mobile:
-st.html("""
+# --------------------------------------------------
+# GLOBAL UI & CSS LAYOUT SETTINGS (UNIFIED & CLEANED)
+# --------------------------------------------------
+st.html(f"""
     <style>
         /* ========================================================
            DESKTOP ONLY: COLLAPSE SPACE (Wider than 768px)
            ======================================================== */
-        @media (min-width: 768px) {
-            [data-testid="stHeader"], header {
+        @media (min-width: 768px) {{
+            [data-testid="stHeader"], header {{
                 background-color: transparent !important;
                 height: 3.5rem !important;
-            }
-            [data-testid="stAppViewMainObj"], .stMain, [data-testid="stMain"] {
-                margin-top: -2.5rem !important; /* Pulls up ONLY on computer screens */
+            }}
+            [data-testid="stAppViewMainObj"], .stMain, [data-testid="stMain"] {{
+                margin-top: -2.5rem !important; 
                 padding-top: 0rem !important;
-            }
+            }}
             [data-testid="stMainBlockContainer"], 
             [data-testid="stAppViewBlockContainer"], 
-            .block-container {
+            .block-container {{
                 padding-top: 1.5rem !important;
                 margin-top: 0rem !important;
-            }
-        }
+            }}
+        }}
 
         /* ========================================================
            MOBILE ONLY PRESETS (Narrower than 767px)
            ======================================================== */
-        @media (max-width: 767px) {
-            [data-testid="stHeader"], header {
+        @media (max-width: 767px) {{
+            [data-testid="stHeader"], header {{
                 background-color: transparent !important;
-                height: 3.5rem !important; /* Leaves room for the floating toggle */
-            }
-            [data-testid="stAppViewMainObj"], .stMain, [data-testid="stMain"] {
-                margin-top: 0rem !important; /* Removes the negative pull so it doesn't overlap */
+                height: 3.5rem !important; 
+            }}
+            [data-testid="stAppViewMainObj"], .stMain, [data-testid="stMain"] {{
+                margin-top: 0rem !important; 
                 padding-top: 0.5rem !important;
-            }
+            }}
             [data-testid="stMainBlockContainer"], 
             [data-testid="stAppViewBlockContainer"], 
-            .block-container {
-                padding-top: 1rem !important; /* Clean buffer layout on mobile viewports */
-            }
-        }
+            .block-container {{
+                padding-top: 1rem !important; 
+            }}
+        }}
 
         /* ========================================================
-           UNIVERSAL SIDEBAR CONTROL (SAFE FOR BOTH DEVICES)
+           UNIVERSAL LAYOUT CONTROLS
            ======================================================== */
-        [data-testid="stHeader"] button {
+        [data-testid="stHeader"] button {{
             background-color: rgba(255, 255, 255, 0.1) !important;
             border-radius: 4px !important;
             z-index: 999999 !important;
-        }
-        [data-testid="stSidebarHeader"] img {
-            max-height: 100px !important;  
-            width: auto !important;
-            min-height: 90px !important;   
-        }
-        [data-testid="stSidebarHeader"] [data-testid="stSidebarLogo"] {
-            max-height: 100px !important;
-            width: auto !important;
-            display: flex !important;
-            align-items: center !important;
-        }
-        [data-testid="stSidebarHeader"] {
-            padding-top: 2.0rem !important;
-            padding-bottom: 1.5rem !important;
-            margin-bottom: 0.5rem !important;
-        }
+        }}
+
+        /* FORCE THE CONTENT ZONE TO TIGHTEN AGAINST THE NEW HEADER LOGO */
+        [data-testid="stSidebarUserContent"] {{
+            padding-top: 0rem !important;
+            margin-top: 0rem !important;
+        }}
+
+        /* ========================================================
+           THE SECRET WEAPON: INJECT LOGO VIA BASE64 DATA DIRECTLY 
+           ======================================================== */
+        [data-testid="stSidebarHeader"] {{
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
+            margin-bottom: 0rem !important;
+            min-height: 80px !important;
+            
+            {sidebar_bg_style}
+            background-size: contain !important;
+            background-repeat: no-repeat !important;
+            background-position: left center !important;
+            margin-left: 55px !important; /* Shifts right slightly so it doesn't collide with the toggle button */
+        }}
     </style>
 """)
 
@@ -123,13 +132,11 @@ col1, col2 = st.columns([1, 5], vertical_alignment="center")
 
 with col1:
     title_logo = Image.open("assets/logo112.png")
-    # Using a clean div wrapper around the image to force zero margins
     st.html("<div style='margin-top: 0 !important; margin-bottom: 0 !important;'>")
     st.image(title_logo, width=100)
     st.html("</div>")
 
 with col2:
-    # Adding 'margin-top: 0 !important;' pulls the text completely up
     st.markdown(
         """
         <h1 style='margin-top: 0 !important; margin-bottom: 0 !important; padding: 0;'>
@@ -142,7 +149,6 @@ with col2:
         unsafe_allow_html=True
     )
 
-# A small controlled space before the welcome paragraph
 st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
 
 st.write(
@@ -154,7 +160,10 @@ st.write(
     """
 )
 
-# Sidebar UI Elements
+# --------------------------------------------------
+# SIDEBAR UI ELEMENTS
+# --------------------------------------------------
+# (Note: Standard image tags are completely removed here to prevent duplication!)
 st.sidebar.title("Student Profile")
 
 name = st.sidebar.text_input("Student Name")

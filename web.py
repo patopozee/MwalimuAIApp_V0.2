@@ -30,8 +30,15 @@ if "study_plan" not in st.session_state:
     st.session_state.study_plan = None
 
 
-from database import create_tables, save_activity, get_student_stats, get_student_quiz_history, get_next_difficulty, get_student_learning_analysis
+from database import (
+    create_tables,
+    save_activity,
+    get_student_stats,
+    get_student_quiz_history,
+    get_next_difficulty,          # Add this
+    get_student_learning_analysis
     
+)
 
 # Build structure safely at startup
 create_tables()

@@ -148,3 +148,68 @@ def get_student_quiz_history(name, grade, age):
     
     # Return a flat list of scores, e.g., [70, 80, 100]
     return [row[0] for row in rows]
+
+def get_next_difficulty(student_name, grade, age, topic):
+    """Calculates the next quiz difficulty level based on historical average scores for a topic."""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT score FROM progress 
+        WHERE student_name = ? AND student_grade = ? AND student_age = ? 
+        AND topic = ? AND activity_type = 'quiz_score'
+        ORDER BY created_at DESC
+    """, (student_name, grade, age, topic))
+    
+    rows = cursor.fetchall()
+    conn.close()
+    
+    if not rows:
+        return "Easy"
+        
+    scores = [row[0] for row in rows]
+    average = sum(scores) / len(scores)
+    
+    if average < 50:
+        return "Easy"
+    elif average < 80:
+        return "Medium"
+    else:
+        return "Hard"
+
+
+def get_student_learning_analysis(student_name, grade, age):
+    """Analyzes performance metrics to isolate strengths, weaknesses, and current levels."""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+    
+    # Fetch distinct topics evaluated via quiz scores
+    cursor.execute("""
+        SELECT topic, AVG(score) FROM progress
+        WHERE student_name = ? AND student_grade = ? AND student_age = ?
+        AND activity_type = 'quiz_score'
+        GROUP BY topic
+    """, (student_name, grade, age))
+    
+    topic_averages = cursor.fetchall()
+    conn.close()
+    
+    weak_topics = [topic for topic, avg in topic_averages if avg < 70]
+    strong_topics = [topic for topic, avg in topic_averages if avg >= 80]
+    
+    # Calculate overarching overall difficulty standing
+    all_scores = [avg for _, avg in topic_averages]
+    overall_avg = sum(all_scores) / len(all_scores) if all_scores else 0
+    
+    if overall_avg < 50:
+        current_level = "Easy"
+    elif overall_avg < 80:
+        current_level = "Medium"
+    else:
+        current_level = "Hard"
+        
+    return {
+        "weak_topics": weak_topics,
+        "strong_topics": strong_topics,
+        "current_level": current_level
+    }

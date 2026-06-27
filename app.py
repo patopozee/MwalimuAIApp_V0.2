@@ -206,7 +206,10 @@ def generate_study_plan(student, stats):
     7. A dynamic custom Quiz recommendation
     8. A warm, motivational message using encouraging Kenyan teacher phrasing (e.g., "Kazi safi", "Keep pushing").
 
-    Format the plan beautifully with clean markdown spacing, bold subtitles, and bullet points.
+    CRITICAL INSTRUCTIONS:
+    - Write the entire plan in plain, natural English (or Kiswahili where appropriate for a Kenyan teacher).
+    - NEVER use "Lorem ipsum", placeholder words, or dummy text.
+    - NEVER include bracketed source numbers or tokens like "" or numbers in brackets. All content must be completely real and readable.
     """
 
     try:

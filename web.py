@@ -2,7 +2,7 @@ from PIL import Image
 import streamlit as st
 import sqlite3
 import os
-import base64 # Added for absolute bulletproof image injection
+import base64  # Added for absolute bulletproof image injection
 from app import ask_mwalimu, generate_quiz, generate_study_plan
 from database import (
     create_tables,
@@ -13,7 +13,7 @@ from database import (
     get_student_learning_analysis,
     get_chat_history,
     save_chat_message,
-    clear_student_chat_history
+    clear_student_chat_history  # Added for database purge support
 )
 
 # 1. RUN BASE DIRECTORY INITIALIZATIONS
@@ -21,7 +21,11 @@ create_tables()
 
 # 2. DEFINE YOUR SIDEBAR FORM ARGUMENTS BEFORE ACCESSED
 st.sidebar.header("Student Profile")
-name = st.sidebar.text_input("Student Name", value=st.session_state.get("student_name", ""))
+
+# 🔥 Automatically trims spaces and capitalizes the first letter of each word
+raw_name = st.sidebar.text_input("Student Name", value=st.session_state.get("student_name") or "")
+name = raw_name.strip().title() if raw_name else ""
+
 grade = st.sidebar.selectbox("Grade", [
     "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6",
     "Grade 7", "Grade 8", "Form 1", "Form 2", "Form 3", "Form 4"
@@ -54,7 +58,7 @@ if "chat_history" not in st.session_state:
 
 if name and name.strip() != "":
     try:
-        historical_chats = get_chat_history(name.strip())
+        historical_chats = get_chat_history(name)
         if historical_chats:
             st.session_state.chat_history = historical_chats
     except Exception as db_err:
@@ -76,10 +80,9 @@ try:
 except Exception:
     sidebar_bg_style = "" # Fallback if path changes
 
-# GLOBAL UI & CSS LAYOUT SETTINGS (UNIFIED & CLEANED)
+# GLOBAL UI & CSS LAYOUT SETTINGS
 st.html(f"""
 <style>
-/* =========== DESKTOP ONLY: COLLAPSE SPACE (Wider than 768px) === */
 @media (min-width: 768px) {{
     [data-testid="stHeader"], header {{
         background-color: transparent !important;
@@ -96,7 +99,6 @@ st.html(f"""
         margin-top: 0rem !important;
     }}
 }}
-/* =========== MOBILE ONLY PRESETS (Narrower than 767px) == */
 @media (max-width: 767px) {{
     [data-testid="stHeader"], header {{
         background-color: transparent !important;
@@ -112,19 +114,15 @@ st.html(f"""
 .block-container {{
     padding-top: 1rem !important;
 }}
-
-/* ========= UNIVERSAL LAYOUT CONTROLS */
 [data-testid="stHeader"] button {{
     background-color: rgba(255, 255, 255, 0.1) !important;
     border-radius: 4px !important;
     z-index: 999999 !important;
 }}
-/* FORCE THE CONTENT ZONE TO TIGHTEN AGAINST THE NEW HEADER LOGO */
 [data-testid="stSidebarUserContent"] {{
     padding-top: 0rem !important;
     margin-top: 0rem !important;
 }}
-/* ========= THE SECRET WEAPON: INJECT LOGO VIA BASE64 DATA DIRECTLY */
 [data-testid="stSidebarHeader"] {{
     padding-top: 0.5rem !important;
     padding-bottom: 0.5rem !important;
@@ -134,12 +132,12 @@ st.html(f"""
     background-size: contain !important;
     background-repeat: no-repeat !important;
     background-position: left center !important;
-    margin-left: 55px !important; /* Shifts right slightly so it doesn't collide with the toggle button */
+    margin-left: 55px !important;
 }}
 </style>
 """)
 
-# TITLE & INTRO (Pulled completely to the top)
+# TITLE & INTRO
 col1, col2 = st.columns([1, 5], vertical_alignment="center")
 with col1:
     try:
@@ -180,23 +178,20 @@ student = {
     "language": language,
 }
 
+# 🔥 CLEAR CHAT BUTTON (Wipes both database entries and UI states simultaneously)
 if st.sidebar.button("🗑️ Clear Chat"):
-    # 1. Wipe the persistent database entries if a profile name is active
     if name and name.strip() != "":
         try:
-            clear_student_chat_history(name.strip())
+            clear_student_chat_history(name)
         except Exception as e:
             print(f"Error clearing database chat logs: {e}")
             
-    # 2. Clear the active session tracking arrays
     st.session_state.messages = []
     st.session_state.chat_history = []
     st.session_state.quiz = None
     st.session_state.quiz_submitted = False
     st.session_state.quiz_score = 0
     st.session_state.quiz_raw_score = 0
-    
-    # 3. Refresh layout context
     st.rerun()
 
 # --- PROGRESS DASHBOARD
@@ -208,7 +203,6 @@ if name:
     st.sidebar.metric("Quizzes Generated", stats.get("quizzes", 0))
     st.sidebar.metric("Average Score", f"{stats.get('average_score', 0)}%")
 
-    # Adaptive learning analysis
     analysis = get_student_learning_analysis(name, grade, age)
     st.sidebar.markdown(f"**Learning Status:** `{analysis.get('current_level', 'Medium')}`")
 
@@ -222,7 +216,6 @@ if name:
         for t in analysis['strong_topics']:
             st.sidebar.caption(f"• {t}")
 
-    # Historical Performance Trends Plot
     history_scores = get_student_quiz_history(name, grade, age)
     if len(history_scores) > 0:
         st.sidebar.markdown("**Performance Trend**")
@@ -258,7 +251,6 @@ if st.button("Generate Quiz"):
             )
             st.rerun()
 
-# --- DISPLAY INTERACTIVE QUIZ
 if st.session_state.quiz:
     st.markdown("### Generated Quiz")
     for i, question in enumerate(st.session_state.quiz):
@@ -347,7 +339,7 @@ st.markdown("---")
 st.write("### 💬 Chat with Mwalimu")
 
 for msg in st.session_state.chat_history:
-    if msg["role"] == "student" or msg["role"] == "user":
+    if msg["role"] in ["student", "user"]:
         with st.chat_message("user"):
             st.write(msg["content"])
     else:
@@ -361,7 +353,6 @@ if user_question := st.chat_input("Ask your question"):
     if not name:
         st.warning("Please configure your Student Profile in the sidebar first!")
     else:
-        # Append locally and save to persistent chat log table
         st.session_state.chat_history.append({"role": "student", "content": user_question})
         save_chat_message(name, grade, age, "student", user_question)
         

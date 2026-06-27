@@ -1,6 +1,7 @@
 from PIL import Image
 import streamlit as st
 import sqlite3
+import os
 import base64  # Added for absolute bulletproof image injection
 from app import ask_mwalimu, generate_quiz, generate_study_plan
     
@@ -463,5 +464,25 @@ if user_question := st.chat_input("Ask your question"):
         # 6. Trigger a single clear rerun to instantly update the UI elements
         st.rerun()
 
-st.markdown("---")
-st.caption("📚 Mwalimu AI App Version 0.4 | Gateway Hybrid Engine")
+logo_html_tag = ""
+logo_path = "assets/logo112.png"  # Or "logo112.png" depending on your active filename
+
+if os.path.exists(logo_path):
+    with open(logo_path, "rb") as f:
+        data = f.read()
+        b64 = base64.b64encode(data).decode()
+        logo_html_tag = f'<img src="data:assets/logo112.png;base64,{b64}" width="20" style="vertical-align: middle; margin-right: 8px;">'
+else:
+    # Fallback emoji if file is misplaced
+    logo_html_tag = "📚 "
+
+# 2. Render the markdown with the encoded logo string
+st.markdown(
+    f"""
+    <p style='color: gray; font-size: 0.85rem; display: flex; align-items: center;'>
+        {logo_html_tag}
+        Mwalimu AI App Version 0.5 | Gateway Hybrid Engine | © 2026 Copyright
+    </p>
+    """, 
+    unsafe_allow_html=True
+)

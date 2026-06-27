@@ -2,11 +2,8 @@ from PIL import Image
 import streamlit as st
 import sqlite3
 import base64  # Added for absolute bulletproof image injection
-from app import (
-    ask_mwalimu, 
-    generate_quiz, 
-    generate_study_plan
-    )
+from app import ask_mwalimu, generate_quiz, generate_study_plan
+    
 
 # --- INITIALIZE SESSION STATE KEYS ---
 if "quiz_questions" not in st.session_state:

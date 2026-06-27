@@ -412,7 +412,20 @@ if user_question := st.chat_input("Ask your question"):
         # 1. Immediately append the student's question to the session state array
         st.session_state.chat_history.append({"role": "student", "content": user_question})
         
-        # 2. Extract metrics safely for context
+        # 2. Save the question activity using your exact database parameters
+        try:
+            save_activity(
+                student_name=name,
+                student_grade=grade,
+                student_age=age,
+                activity_type="question",
+                topic=favorite_subject,  # Pass your sidebar favorite_subject variable
+                score=0
+            )
+        except Exception as db_err:
+            print(f"Database logging background error: {db_err}")
+            
+        # 3. Extract metrics safely using all three required positional parameters
         stats = get_student_stats(name, grade, age)
         analysis = get_student_learning_analysis(name, grade, age)
         
@@ -423,7 +436,7 @@ if user_question := st.chat_input("Ask your question"):
         Strong Topics: {', '.join(analysis.get('strong_topics', [])) if analysis.get('strong_topics') else 'None'}
         """
         
-        # 3. Call the model and store the answer
+        # 4. Call the model and store the answer
         with st.spinner("Mwalimu is thinking..."):
             try:
                 response = ask_mwalimu(
@@ -439,13 +452,15 @@ if user_question := st.chat_input("Ask your question"):
                     
             except Exception as e:
                 response = f"Mwalimu configuration error: {str(e)}"
+                
             if response:
                 response = response.replace("User Safety: safe", "").strip()
                 response = response.replace("User Safety:safe", "").strip()
-        # 4. Append Mwalimu's answer to the session state array
+                
+        # 5. Append Mwalimu's answer to the session state array
         st.session_state.chat_history.append({"role": "assistant", "content": response})
         
-        # 5. Trigger a single clear rerun to instantly update the UI elements
+        # 6. Trigger a single clear rerun to instantly update the UI elements
         st.rerun()
 
 st.markdown("---")

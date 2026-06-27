@@ -2,7 +2,11 @@ from PIL import Image
 import streamlit as st
 import sqlite3
 import base64  # Added for absolute bulletproof image injection
-from app import ask_mwalimu, generate_quiz
+from app import (
+    ask_mwalimu, 
+    generate_quiz, 
+    generate_study_plan
+    )
 
 # --- INITIALIZE SESSION STATE KEYS ---
 if "quiz_questions" not in st.session_state:
@@ -22,13 +26,21 @@ if "messages" not in st.session_state:
 
 if "quiz" not in st.session_state:
     st.session_state.quiz = None  
+# Initialize chat history if it doesn't exist in the current session state yet
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+if "study_plan" not in st.session_state:
+    st.session_state.study_plan = None
 
 
 from database import (
     create_tables,
     save_activity,
     get_student_stats,
-    get_student_quiz_history
+    get_student_quiz_history,
+    get_next_difficulty,          # Add this
+    get_student_learning_analysis
+    
 )
 
 # Build structure safely at startup
@@ -38,7 +50,8 @@ create_tables()
 st.set_page_config(
     page_title="Mwalimu AI App",
     page_icon="assets/logo112.png",
-    layout="centered"
+    layout="centered",
+    initial_sidebar_state="expanded"
 )
 
 # --- BASE64 SIDEBAR IMAGE INJECTOR ---
@@ -222,16 +235,30 @@ if name:
     st.sidebar.metric("Questions Asked", stats["questions"])
     st.sidebar.metric("Quizzes Generated", stats["quizzes"])
     st.sidebar.metric("Average Score", f"{stats['average_score']}%")
-    history_scores = get_student_quiz_history(name, grade, age)
     
+    # 1. Fetch the adaptive learning analysis from your database
+    analysis = get_student_learning_analysis(name, grade, age)
+    
+    # 2. Display current adaptive status tier cleanly
+    st.sidebar.markdown(f"**Learning Status:** `{analysis['current_level']}`")
+    
+    # 3. Conditionally render weak performance topics
+    if analysis.get('weak_topics'):
+        st.sidebar.markdown("⚠️ **Needs Improvement:**")
+        for t in analysis['weak_topics']:
+            st.sidebar.caption(f"• {t}")
+            
+    # 4. Conditionally render mastered topics
+    if analysis.get('strong_topics'):
+        st.sidebar.markdown("🏆 **Mastered Areas:**")
+        for t in analysis['strong_topics']:
+            st.sidebar.caption(f"• {t}")
+            
+    # 5. Render historical trends plot
+    history_scores = get_student_quiz_history(name, grade, age)
     if len(history_scores) > 0:
         st.sidebar.markdown("**📈 Performance Trend**")
-        
-        # Streamlit line charts accept lists/arrays directly!
         st.sidebar.line_chart(history_scores)
-    else:
-        st.sidebar.caption("Complete a few quizzes to see your progress graph!")
-
 # -----------------------------------
 # QUIZ GENERATOR
 # -----------------------------------
@@ -242,18 +269,23 @@ quiz_topic = st.text_input(
     "Quiz Topic",
     placeholder="e.g. Fractions, Photosynthesis, Electricity"
 )
-
 if st.button("Generate Quiz"):
     if not quiz_topic.strip():
         st.warning("Please enter a quiz topic.")
     else:
         with st.spinner("Generating quiz..."):
-            st.session_state.quiz = generate_quiz(quiz_topic, student)
+            # Step 3 & 4: Automatically resolve adaptive difficulty tier 
+            target_diff = get_next_difficulty(name, grade, age, quiz_topic)
+            
+            # Pass resolved tier straight to the generation engine [cite: 79, 82]
+            st.session_state.quiz = generate_quiz(quiz_topic, student, target_diff)
             st.session_state.quiz_submitted = False
             st.session_state.quiz_score = 0
             st.session_state.quiz_raw_score = 0
+            
+            # Log initial event footprint tracking
             save_activity(name, grade, age, "quiz", quiz_topic, 0)
-            st.rerun() 
+            st.rerun()
 
 # -----------------------------------
 # DISPLAY INTERACTIVE QUIZ
@@ -318,39 +350,103 @@ if st.session_state.quiz:
             st.session_state.quiz_raw_score = 0
             st.rerun()
 
+# --- AI STUDY PLAN SECTION ---
+st.markdown("---")
+st.subheader("📅 AI Personalized Study Plan")
+
+if st.button("Generate Today's Study Plan"):
+    if not name:
+        st.warning("Please configure your Student Profile in the sidebar first!")
+    else:
+        with st.spinner("Creating your personalized study plan..."):
+            # 1. Fetch metrics safely using name
+            stats = get_student_stats(name, age, grade)
+            
+            # 2. Re-assemble student data matching your exact sidebar variables
+            student_data = {
+                "name": name,
+                "grade": grade,  
+                "age": age,      
+                "favorite_subject": favorite_subject,
+                "weak_subject": weak_subject,
+                "learning_style": learning_style,
+                "language": language
+            }
+            
+            # 3. Call your core generation logic
+            st.session_state.study_plan = generate_study_plan(student_data, stats)
+        
+        # This line must align EXACTLY with the "with" block above it
+        st.rerun()
+
+# Display the generated plan card if it exists
+if st.session_state.study_plan:
+    st.info("💡 Tip: Follow the allocated time intervals for maximum focus today!")
+    st.markdown(st.session_state.study_plan)
+    
+    # Optional clear button to refresh the container
+    if st.button("Clear Study Plan"):
+        st.session_state.study_plan = None
+        st.rerun()
 # -----------------------------------
 # DISPLAY CONVERSATION HISTORY
 # -----------------------------------
 st.markdown("---")
-st.subheader("💬 Chat with Mwalimu")
+st.write("### 💬 Chat with Mwalimu")
 
-for message in st.session_state.messages:
-    if message["role"] == "student":
-        st.write("### 👨‍🎓 You")
-        st.write(message["content"])
-    elif message["role"] == "assistant":
-        st.write("### 👨‍🏫 Mwalimu AI App")
-        st.write(message["content"])
-    st.markdown("---")
+# Loop through history entries and render them sequentially
+for msg in st.session_state.chat_history:
+    if msg["role"] == "student":
+        with st.chat_message("user"):
+            st.write(msg["content"])
+    else:
+        with st.chat_message("assistant"):
+            st.write(msg["content"])
 
 # -----------------------------------
 # MOBILE-SAFE INPUT
 # -----------------------------------
-question = st.chat_input("✏️ Ask your question")
-
-if question:
-    if not name.strip():
-        st.warning("⚠️ Please enter your name in the Student Profile sidebar.")
-    elif not question.strip():
-        st.warning("⚠️ Please type a question.")
+# Handle user chat input
+# Handle user chat input
+if user_question := st.chat_input("Ask your question"):
+    if not name:
+        st.warning("Please configure your Student Profile in the sidebar first!")
     else:
-        st.session_state.messages.append({"role": "student", "content": question})
-
-        with st.spinner("🧠 Mwalimu AI is thinking..."):
-            answer = ask_mwalimu(question, student, st.session_state.messages)
-            save_activity(name, grade, age, "question", question, 0)
-
-        st.session_state.messages.append({"role": "assistant", "content": answer})
+        # 1. Immediately append the student's question to the session state array
+        st.session_state.chat_history.append({"role": "student", "content": user_question})
+        
+        # 2. Extract metrics safely for context
+        stats = get_student_stats(name, grade, age)
+        analysis = get_student_learning_analysis(name, grade, age)
+        
+        adaptive_context = f"""
+        Current Mastery Level: {analysis.get('current_level', 'Medium')}
+        Average Quiz Score: {stats.get('average_score', 0)}%
+        Weak Topics: {', '.join(analysis.get('weak_topics', [])) if analysis.get('weak_topics') else 'None'}
+        Strong Topics: {', '.join(analysis.get('strong_topics', [])) if analysis.get('strong_topics') else 'None'}
+        """
+        
+        # 3. Call the model and store the answer
+        with st.spinner("Mwalimu is thinking..."):
+            try:
+                response = ask_mwalimu(
+                    question=user_question,
+                    student=student,
+                    messages=st.session_state.chat_history,
+                    adaptive_context=adaptive_context
+                )
+                
+                # Check if the response returned completely empty
+                if not response:
+                    response = "Mambo! I received an empty response. Let's try asking that again."
+                    
+            except Exception as e:
+                response = f"Mwalimu configuration error: {str(e)}"
+        
+        # 4. Append Mwalimu's answer to the session state array
+        st.session_state.chat_history.append({"role": "assistant", "content": response})
+        
+        # 5. Trigger a single clear rerun to instantly update the UI elements
         st.rerun()
 
 st.markdown("---")

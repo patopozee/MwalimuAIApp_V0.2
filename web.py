@@ -439,7 +439,9 @@ if user_question := st.chat_input("Ask your question"):
                     
             except Exception as e:
                 response = f"Mwalimu configuration error: {str(e)}"
-        
+            if response:
+                response = response.replace("User Safety: safe", "").strip()
+                response = response.replace("User Safety:safe", "").strip()
         # 4. Append Mwalimu's answer to the session state array
         st.session_state.chat_history.append({"role": "assistant", "content": response})
         

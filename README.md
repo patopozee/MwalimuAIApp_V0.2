@@ -1,170 +1,168 @@
 # 🎓 Mwalimu AI App
 
-<div align="center">
+> **Shaping Minds, Shifting Futures.**
 
-### Your Personalized AI Teacher for Kenyan Students
+Mwalimu AI App is an AI-powered educational platform built specifically for Kenyan primary and secondary school students. It combines personalized tutoring, intelligent lesson generation, adaptive quizzes, flashcards, and study planning into one learning environment.
 
-An intelligent educational platform built with **Python**, **Streamlit**, and **OpenRouter AI**.
-
-![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python)
-![Streamlit](https://img.shields.io/badge/Streamlit-Web%20App-red?logo=streamlit)
-![OpenRouter](https://img.shields.io/badge/OpenRouter-AI%20Gateway-purple)
-![License](https://img.shields.io/badge/License-MIT-green)
-
-</div>
+The application uses Google's Gemini models (via OpenRouter) together with Python, Streamlit, and SQLite to deliver personalized educational experiences based on each student's learning profile, academic performance, and preferred learning style.
 
 ---
 
-## 📖 Overview
+# 🌟 Features
 
-**Mwalimu AI App** is an AI-powered educational assistant designed to provide personalized learning experiences for students.
+## 💬 AI Tutor (Ask Mwalimu)
 
-Inspired by the role of a real Kenyan teacher (*Mwalimu*), the platform adapts explanations, examples, and quizzes based on each learner's:
+* Personalized AI teacher
+* Context-aware conversations
+* Remembers previous discussions
+* Adapts explanations to:
 
-* 🎓 Grade level
-* 👤 Age
-* ⭐ Favorite subjects
-* 📉 Weak subjects
-* 🧠 Learning style
-* 🌍 Preferred language (English, Kiswahili, or Sheng)
+  * Grade level
+  * Age
+  * Learning style
+  * Preferred language
+* Supports:
 
-The goal is to make learning more engaging, accessible, and personalized for every student.
-
----
-
-# ✨ Features
-
-## 👨‍🎓 Personalized Student Profiles
-
-Students can customize their learning experience through an interactive profile system.
-
-### Profile Attributes
-
-* Student Name
-* Grade Level (Grade 1 – Form 4)
-* Age
-* Favorite Subject
-* Weak Subject
-* Learning Style
-* Preferred Language
-
-Mwalimu AI uses this information to tailor every response.
+  * English
+  * Kiswahili
+  * Sheng
 
 ---
 
-## 🤖 AI-Powered Classroom Assistant
+## 📝 Interactive Quiz Generator
 
-Ask questions on any school topic and receive:
-
-* Grade-appropriate explanations
-* Personalized examples
-* Step-by-step guidance
-* Encouraging feedback
-* Practice questions
-
-The AI adapts its teaching style to suit each learner.
-
----
-
-## 💬 Context-Aware Conversations
-
-Unlike traditional chatbots, Mwalimu AI remembers the ongoing conversation during a session.
-
-This allows students to ask follow-up questions naturally, such as:
-
-> What is photosynthesis?
-
-Then:
-
-> Explain it in Kiswahili.
-
-The AI understands the context automatically.
-
----
-
-## 📝 Instant Quiz Generator
-
-Generate customized quizzes on any topic.
+Generate AI-powered quizzes for any subject.
 
 Features include:
 
-* 5 multiple-choice questions
-* Grade-level adaptation
-* Personalized difficulty
-* Topic-specific assessment
-* Instant generation
-
-Example topics:
-
-* Fractions
-* Photosynthesis
-* Electricity
-* English Grammar
-* History
+* Multiple-choice questions
+* Grade-specific difficulty
+* Interactive answering
+* Automatic scoring
+* Answer review
+* Performance tracking
 
 ---
 
-## ⚡ High-Availability AI Routing
+## 🃏 AI Flashcards
 
-Powered by **OpenRouter**, Mwalimu AI benefits from:
+Generate study flashcards instantly.
 
-* Unified AI gateway architecture
-* Intelligent model routing
-* Reduced downtime
-* Improved reliability
-* Simplified API management
+Features:
+
+* Active recall learning
+* Question & answer cards
+* Personalized to the student profile
+* Ideal for revision and exam preparation
 
 ---
 
-# 🏗️ System Architecture
+## 📖 AI Lesson Generator
+
+Generate complete textbook-style lessons.
+
+Each lesson includes:
+
+* Lesson title
+* Learning objectives
+* Introduction
+* Detailed explanations
+* Kenyan real-life examples
+* Worked examples
+* Practice exercises
+* Summary
+* Homework
+
+Lessons are generated according to the student's:
+
+* Grade
+* Age
+* Learning style
+* Preferred language
+
+---
+
+## 📅 AI Personalized Study Planner
+
+Automatically creates personalized daily study schedules using:
+
+* Student profile
+* Weak subjects
+* Learning preferences
+* Previous performance
+
+---
+
+## 📊 Student Progress Dashboard
+
+Track academic growth over time.
+
+Includes:
+
+* Questions asked
+* Quizzes completed
+* Average quiz score
+* Weak topic detection
+* Performance analytics
+* Study history
+
+---
+
+## 🧠 Adaptive Learning
+
+Mwalimu AI continuously adapts learning by analyzing:
+
+* Previous quiz scores
+* Weak topics
+* Frequently asked questions
+* Student learning preferences
+
+This allows the platform to recommend better lessons, quizzes, and study plans over time.
+
+---
+
+# 🏗️ Technology Stack
+
+| Technology    | Purpose            |
+| ------------- | ------------------ |
+| Python        | Backend            |
+| Streamlit     | User Interface     |
+| SQLite        | Local Database     |
+| Google Gemini | AI Model           |
+| OpenRouter    | AI Gateway         |
+| Pillow        | Image Processing   |
+| Plotly        | Performance Charts |
+| Pandas        | Data Analysis      |
+
+---
+
+# 📂 Project Structure
 
 ```text
-                 Student
-                    │
-                    ▼
-          Streamlit Frontend
-                 (web.py)
-                    │
-                    ▼
-         Session State Manager
-                    │
-                    ▼
-            Mwalimu Engine
-                 (app.py)
-                    │
-                    ▼
-            OpenRouter API
-                    │
-                    ▼
-            Large Language Model
-                    │
-                    ▼
-      Personalized Learning Response
+Mwalimu-AI/
+│
+├── assets/
+│   ├── logo112.png
+│   └── logo211.png
+│
+├── app.py                 # AI engine
+├── database.py            # SQLite database functions
+├── web.py                 # Streamlit user interface
+├── requirements.txt
+├── README.md
+└── .env
 ```
 
 ---
 
-# 🛠️ Technology Stack
-
-| Technology    | Purpose                         |
-| ------------- | ------------------------------- |
-| Python 3.10+  | Core application development    |
-| Streamlit     | Interactive web interface       |
-| OpenRouter    | AI model gateway                |
-| OpenAI SDK    | API client                      |
-| python-dotenv | Environment variable management |
-| Session State | Conversation memory             |
-
----
-
-# 🚀 Getting Started
+# 🚀 Installation
 
 ## 1. Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/MwalimuAI.git
+git clone https://github.com/yourusername/mwalimu-ai.git
 
-cd MwalimuAI
+cd mwalimu-ai
 ```
 
 ---
@@ -179,7 +177,7 @@ python -m venv venv
 venv\Scripts\activate
 ```
 
-### Linux / macOS
+### Linux/macOS
 
 ```bash
 python3 -m venv venv
@@ -195,25 +193,15 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Example requirements:
-
-```text
-streamlit
-openai
-python-dotenv
-```
-
 ---
 
 ## 4. Configure Environment Variables
 
-Create a `.env` file in the project root:
+Create a `.env` file.
 
 ```env
-OPENROUTER_API_KEY=your_openrouter_api_key_here
+OPENROUTER_API_KEY=your_api_key_here
 ```
-
-⚠️ Never commit your `.env` file to GitHub.
 
 ---
 
@@ -223,141 +211,81 @@ OPENROUTER_API_KEY=your_openrouter_api_key_here
 streamlit run web.py
 ```
 
-The application will launch locally at:
+Open your browser:
 
-```text
-http://localhost:8501
 ```
-
----
-
-# 📂 Project Structure
-
-```text
-MwalimuAI/
-│
-├── app.py
-│   └── AI engine, prompt management, quiz generation
-│
-├── web.py
-│   └── Streamlit UI, student profiles, chat interface
-│
-├── .env
-│   └── Environment variables
-│
-├── requirements.txt
-│   └── Python dependencies
-│
-├── README.md
-│   └── Project documentation
-│
-└── assets/
-    └── Screenshots and images
+http://localhost:8501
 ```
 
 ---
 
 # 📸 Screenshots
 
-```text
-assets/
-├── homepage.png
-├── student-profile.png
-├── quiz-generator.png
-└── classroom-chat.png
-```
+You can showcase screenshots such as:
+
+* Home Dashboard
+* Ask Mwalimu
+* Quiz Generator
+* AI Lessons Generator
+* Flashcards
+* Personalized Study Planner
+* Student Progress Dashboard
 
 ---
 
-# ☁️ Deployment
+# 🎯 Current Features
 
-Mwalimu AI is optimized for deployment on **Streamlit Community Cloud**.
-
-### Push Your Code
-
-```bash
-git add .
-
-git commit -m "feat: deploy production-ready Mwalimu AI"
-
-git push origin main
-```
-
-### Deploy
-
-1. Connect your GitHub repository to Streamlit Community Cloud.
-2. Select your repository.
-3. Set:
-
-```text
-Main file path:
-web.py
-```
-
-4. Add your secret key:
-
-```toml
-OPENROUTER_API_KEY="your_actual_api_key"
-```
-
-5. Deploy 🚀
+* ✅ AI Tutor
+* ✅ Interactive Quiz Generator
+* ✅ AI Lesson Generator
+* ✅ AI Flashcards
+* ✅ Personalized Study Plans
+* ✅ Student Progress Tracking
+* ✅ Adaptive Learning
+* ✅ Weak Topic Detection
+* ✅ SQLite Database
+* ✅ Performance Charts
+* ✅ Responsive Streamlit Interface
 
 ---
 
-# 🗺️ Roadmap
+# 🔒 Configuration Notes
 
-## Version 0.5
+To ensure stability:
 
-* [ ] Interactive quizzes
-* [ ] Automatic quiz grading
-* [ ] Quiz score tracking
+* `st.set_page_config()` must be the first Streamlit command.
+* Configure your OpenRouter API key in the `.env` file.
+* Keep database initialization enabled before launching the application.
+* Avoid modifying session-state keys without initialization.
 
-## Version 0.6
+---
 
-* [ ] Student progress dashboard
-* [ ] SQLite database integration
-* [ ] Learning history
+# 🚧 Roadmap
 
-## Version 0.7
+Upcoming features include:
 
-* [ ] Homework assistant
-* [ ] Flashcard generator
-* [ ] Study planner
-
-## Version 0.8
-
-* [ ] CBC curriculum knowledge base
-* [ ] KCSE revision materials
-* [ ] Retrieval-Augmented Generation (RAG)
-
-## Version 1.0
-
-* [ ] Voice tutoring
-* [ ] Parent dashboard
-* [ ] Teacher dashboard
-* [ ] Full AI learning ecosystem
+* 🔊 Text-to-Speech Lessons
+* 🎙️ Voice Conversations
+* 📄 PDF Lesson Export
+* 📈 Parent & Teacher Dashboards
+* 🏆 Gamification (Badges & Rewards)
+* 👨‍🏫 Teacher Portal
+* 🌐 Web Deployment
+* 📱 Android Application
+* ☁️ Cloud Database
+* 🔐 Student Authentication
 
 ---
 
 # 🤝 Contributing
 
-Contributions are welcome.
+Contributions are welcome!
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push your branch
-5. Open a Pull Request
-
----
-
-# 👨‍💻 Author
-
-**Mugo Young Millionaire**
-
-Python Developer • AI Enthusiast • Educational Technology Builder
-
-Building AI-powered learning tools for the next generation of students.
+1. Fork the repository.
+2. Create a feature branch.
+3. Commit your changes.
+4. Push your branch.
+5. Open a Pull Request.
 
 ---
 
@@ -365,5 +293,12 @@ Building AI-powered learning tools for the next generation of students.
 
 This project is licensed under the MIT License.
 
-Feel free to use, modify, and distribute the software in accordance with the license terms.
+---
 
+# 👨‍💻 Developer
+
+**JP Cyber Services**
+
+**Mwalimu AI App**
+
+*"Shaping Minds, Shifting Futures."*

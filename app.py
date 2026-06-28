@@ -226,3 +226,143 @@ def generate_study_plan(student, stats):
     except Exception as e:
         print(f"OpenRouter Study Plan Error: {e}")
         return f"Mwalimu encountered an issue preparing your roadmap: {e}. Please click generate again!"
+
+
+def generate_flashcards(topic, student):
+    """
+    Generates structured flashcards using OpenRouter based on a topic
+    and the student's background profile.
+    """
+    prompt = f"""You are Mwalimu AI.
+Student Profile
+Name: {student["name"]}
+Grade: {student["grade"]}
+Age: {student["age"]}
+Learning Style: {student["learning_style"]}
+Language: {student["language"]}
+
+Create exactly 10 revision flashcards about: {topic}
+Return ONLY valid JSON.
+
+Format:
+[
+  {{
+    "question": "...",
+    "answer": "..."
+  }}
+]
+
+Rules:
+- Grade appropriate
+- Simple language
+- No markdown
+- No explanations
+- No extra text"""
+
+    try:
+        response = client.chat.completions.create(
+            extra_headers={
+                "HTTP-Referer": "https://mwalimu-ai.streamlit.app",
+                "X-Title": "Mwalimu AI App Flashcards",
+            },
+            model="openrouter/free",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        
+        flash_text = response.choices[0].message.content
+        if flash_text is None:
+            print("No content returned from model")
+            return []
+
+        # --- RECOVERY MECHANISM FOR UNWANTED MARKDOWN CODELOCKS ---
+        flash_text = flash_text.replace("```json", "").replace("```", "").strip()
+        
+        # Parse and return the structured Python list
+        return json.loads(flash_text)
+        
+
+    except json.JSONDecodeError:
+        print("Invalid JSON returned by Model.")
+        # Now flash_text is guaranteed to exist as either None or a string!
+        #print(f"Raw Output: {flash_text}")
+        return [
+            {"question": f"What is the core concept of {topic}?", "answer": "Mwalimu's notes got slightly jumbled. Please click generate again!"}
+        ]
+    except Exception as e:
+        print(f"Error generating flashcards: {e}")
+        return [
+            {"question": f"What is the core concept of {topic}?", "answer": "Please try generating your deck again."}
+        ]
+    
+def generate_lesson(topic, student):
+    """
+    Generates a structured, pedagogical lesson plan tailored to a student's grade level,
+    learning style, and language preferences using Kenyan contextual references.
+    """
+    # 1. Structure the prompt according to the version requirements specifications
+    prompt = f"""
+    You are Mwalimu AI, an inspiring, friendly, and expert Kenyan school teacher.
+    Instead of answering a single query, your goal is to generate a comprehensive, structured, and engaging lesson plan for a student.
+
+    STUDENT PROFILE:
+    - Name: {student.get('name', 'Student')}
+    - Grade: {student.get('grade', 'General')}
+    - Age: {student.get('age', '10')}
+    - Learning Style: {student.get('learning_style', 'Interactive')}
+    - Preferred Language: {student.get('language', 'English')}
+
+    LESSON TARGET:
+    - Topic: {topic}
+
+    Please construct the lesson using clean Markdown headers. The lesson MUST include the following 9 numbered sections in order:
+
+    1. Lesson Title
+       - Create an exciting and clear title incorporating the topic.
+    
+    2. Learning Objectives
+       - State 3 or 4 clear bullet points outlining what the student will be able to do after completing this lesson.
+
+    3. Introduction
+       - Hook the student's interest using a friendly greeting (e.g., using "Mambo!", "Habari!") and relate the topic to everyday life.
+
+    4. Main Explanation
+       - Breakdown the core concepts clearly. Use simple language appropriate for a {student.get('grade')} student.
+       - Adapt explicitly to a {student.get('learning_style')} learning style (e.g., use visual descriptions, step-by-step logic, conversational storytelling, or practical thought-experiments).
+
+    5. Real-life Kenyan Examples
+       - Ground the concept with relatable Kenyan contextual examples (e.g., matatus, market scenarios, local food like ugali/sukuma wiki, running tracking, or sharing items among friends).
+
+    6. Worked Examples
+       - Provide step-by-step solutions to 1 or 2 practical problems or case scenarios illustrating the concept.
+
+    7. Practice Questions
+       - Provide 3 progressive questions matching the difficulty of the lesson to encourage active recall and critical thinking. Do not provide the answers immediately.
+
+    8. Summary & Fun Fact
+       - Bullet points summarizing the main takeaways of the lesson, followed by an interesting, mind-blowing fun fact relating to the topic.
+
+    9. Homework
+       - Create an engaging practical activity or mini-assignment that the student can perform at home or around the house to observe the concept in action.
+
+    STRICT GUIDELINES:
+    - Always match the vocabulary to {student.get('grade')} expectations.
+    - Write primarily in the preferred language: {student.get('language')}. (If Sheng or Kiswahili is selected, seamlessly integrate local flavor while maintaining educational clarity).
+    - Do not append any meta-commentary, safety labels ("User Safety: safe"), or extra prompt diagnostics. Output only the complete lesson content.
+    """
+
+    # 2. Call your existing LLM execution setup (matches your current app.py setup)
+    # Adjust this function call if your app uses a different underlying runner name (e.g., client.models.generate_content)
+    try:
+        response = client.chat.completions.create(
+            extra_headers={
+                "HTTP-Referer": "https://mwalimu-ai.streamlit.app",
+                "X-Title": "Mwalimu AI Study Plan",
+            },
+            model="openrouter/free",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message.content
+        
+    except Exception as e:
+        print(f"OpenRouter Study Plan Error: {e}")
+        return f"Mwalimu encountered an issue preparing your roadmap: {e}. Please click generate again!"

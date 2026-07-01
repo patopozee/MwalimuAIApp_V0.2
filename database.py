@@ -5,6 +5,7 @@ DATABASE_NAME = "mwalimu.db"
 def create_tables():
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
+    
     # 1. Students Profile Schema
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS students (
@@ -18,7 +19,8 @@ def create_tables():
         language TEXT
     )
     """)
-    # 2. Main Analytics & Activity Progress Schema
+    
+    # 2. Upgraded Main Analytics & Activity Progress Schema with CBC Columns
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS progress (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,6 +30,10 @@ def create_tables():
         activity_type TEXT,
         topic TEXT,
         score INTEGER,
+        subject TEXT,
+        strand TEXT,
+        sub_strand TEXT,
+        learning_outcome TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
@@ -54,45 +60,57 @@ def save_student(student):
     conn.commit()
     conn.close()
 
-def save_activity(student_name, student_grade, student_age, activity_type, topic, score=0):
-    """Saves records with full distinct profile context details into the progress table."""
+def save_activity(student_name, student_grade, student_age, activity_type, topic, score=0, subject="General", topics="General", sub_topic="General", learning_outcome="General"):
+    """Saves records with full distinct profile context and Topic/Sub-topic details into the progress table."""
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
+    
     cursor.execute("""
     INSERT INTO progress (
-        student_name, student_grade, student_age, activity_type, topic, score
+        student_name, student_grade, student_age, activity_type, topic, score, subject, strand, sub_strand, learning_outcome
     )
-    VALUES (?, ?, ?, ?, ?, ?)
-    """, (student_name, student_grade, student_age, activity_type, topic, score))
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        student_name, 
+        student_grade, 
+        int(student_age), 
+        activity_type, 
+        topic,            # Maps to the main activity topic input
+        score, 
+        subject, 
+        topics,            # 🔄 Maps your new 'topic' selection variable cleanly into the 'strand' column
+        sub_topic,        # 🔄 Maps your new 'sub_topic' selection variable cleanly into the 'sub_strand' column
+        learning_outcome
+    ))
     conn.commit()
     conn.close()
 
-# ==================== UPDATED QUANTITATIVE QUERIES ====================
+# ==================== QUANTITATIVE PROGRESS QUERIES ====================
 
 def get_student_stats(student_name, student_grade, student_age):
     """Calculates live aggregated metric counters using name, grade, and age filters together."""
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     
-    # Questions counter - FIXED: added full profile filter matches
+    # Questions counter - strict matching
     cursor.execute("""
         SELECT COUNT(*) FROM progress 
         WHERE student_name = ? AND student_grade = ? AND student_age = ? AND activity_type = 'question'
-    """, (student_name, student_grade, student_age))
+    """, (student_name, student_grade, int(student_age)))
     questions = cursor.fetchone()[0]
     
-    # Quizzes counter - FIXED: added full profile filter matches
+    # Quizzes counter - strict matching
     cursor.execute("""
         SELECT COUNT(*) FROM progress 
         WHERE student_name = ? AND student_grade = ? AND student_age = ? AND activity_type = 'quiz'
-    """, (student_name, student_grade, student_age))
+    """, (student_name, student_grade, int(student_age)))
     quizzes = cursor.fetchone()[0]
     
-    # Average score - FIXED: added full profile filter matches
+    # Average score - strict matching
     cursor.execute("""
         SELECT AVG(score) FROM progress 
         WHERE student_name = ? AND student_grade = ? AND student_age = ? AND activity_type = 'quiz_score'
-    """, (student_name, student_grade, student_age))
+    """, (student_name, student_grade, int(student_age)))
     avg_score = cursor.fetchone()[0]
     avg_score = round(avg_score) if avg_score else 0
     
@@ -107,12 +125,11 @@ def get_student_quiz_history(student_name, student_grade, student_age):
     """Fetches historical quiz scores scoped explicitly to a single unique student profile layout."""
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
-    # FIXED: query now checks for full distinct identity criteria
     cursor.execute("""
         SELECT score FROM progress
         WHERE student_name = ? AND student_grade = ? AND student_age = ? AND activity_type = 'quiz_score'
         ORDER BY created_at ASC
-    """, (student_name, student_grade, student_age))
+    """, (student_name, student_grade, int(student_age)))
     scores = [row[0] for row in cursor.fetchall()]
     conn.close()
     return scores
@@ -121,12 +138,11 @@ def get_next_difficulty(student_name, student_grade, student_age, topic):
     """Dynamically scales assignment difficulty parameters based on performance details of this explicit student."""
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
-    # FIXED: tracking performance limits across matching grade/age profiles
     cursor.execute("""
         SELECT score FROM progress
         WHERE student_name = ? AND student_grade = ? AND student_age = ? AND topic = ? AND activity_type = 'quiz_score'
         ORDER BY created_at DESC LIMIT 3
-    """, (student_name, student_grade, student_age, topic))
+    """, (student_name, student_grade, int(student_age), topic))
     scores = [row[0] for row in cursor.fetchall()]
     conn.close()
     
@@ -143,12 +159,11 @@ def get_student_learning_analysis(student_name, student_grade, student_age):
     """Provides focus topic analytics isolated by name, grade, and age checks."""
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
-    # FIXED: Aggregates only rows belonging to this precise child version template
     cursor.execute("""
         SELECT topic, AVG(score) FROM progress
         WHERE student_name = ? AND student_grade = ? AND student_age = ? AND activity_type = 'quiz_score'
         GROUP BY topic
-    """, (student_name, student_grade, student_age))
+    """, (student_name, student_grade, int(student_age)))
     topic_averages = cursor.fetchall()
     conn.close()
     
@@ -170,19 +185,18 @@ def get_student_learning_analysis(student_name, student_grade, student_age):
         "current_level": current_level
     }
 
-# ==================== UPDATED CHAT ROUTINES ====================
+# ==================== CHAT HISTORY ROUTINES ====================
 
 def get_chat_history(student_name: str, grade: str, age: int):
-    """Retrieves previous chat logs sorted chronologically matching the user's explicit profile combo."""
+    """Retrieves previous chat logs sorted chronologically from the progress table."""
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
-    # FIXED: Added student_grade and student_age parameter rules to prevent cross-chat leak
     cursor.execute("""
         SELECT activity_type, topic FROM progress
-        WHERE student_name = ? AND student_grade = ? AND student_age = ? 
+        WHERE student_name = ? AND student_grade = ? AND student_age = ?
         AND (activity_type = 'student' OR activity_type = 'assistant')
         ORDER BY id ASC
-    """, (student_name, grade, age))
+    """, (student_name, grade, int(age)))
     rows = cursor.fetchall()
     conn.close()
     return [{"role": "user" if r[0] == "student" else "assistant", "content": r[1]} for r in rows]
@@ -193,7 +207,7 @@ def save_chat_message(student_name: str, grade: str, age: int, role: str, messag
     save_activity(
         student_name=student_name,
         student_grade=grade,
-        student_age=age,
+        student_age=int(age),
         activity_type=activity,
         topic=message,
         score=0
@@ -203,11 +217,10 @@ def clear_student_chat_history(student_name: str, grade: str, age: int):
     """Deletes chat data ONLY for this matching profile segment configuration."""
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
-    # FIXED: Added strict segment matching so clearing one user doesn't drop conversations of name clones
     cursor.execute("""
         DELETE FROM progress
         WHERE student_name = ? AND student_grade = ? AND student_age = ?
         AND (activity_type = 'student' OR activity_type = 'assistant')
-    """, (student_name, grade, age))
+    """, (student_name, grade, int(age)))
     conn.commit()
     conn.close()
